@@ -115,15 +115,29 @@
   (tcsetattr port TCSANOW t)
   t)
 
+(define baudrate? (curry hash-has-key? baudrate-constants))
+
+(provide (contract-out
+	  [serial-open (-> path-string?
+			   #:baudrate baudrate?
+			   #:bytesize (or/c 8 7 6 5)
+			   #:stopbits (or/c 'one 'one-point-five 'two)
+			   #:parity (or/c 'none 'even 'odd)
+			   #:xonxoff boolean?
+			   #:rtscts boolean?
+			   #:inter-char-timeout integer?
+			   (values input-port? output-port?))]))
 (define (serial-open path
 		     #:baudrate [baudrate 9600]
 		     #:bytesize [bytesize 8]
 		     #:stopbits [stopbits 'one]
 		     #:parity [parity 'even]
-		     #:xonxoff [xonxoff 0]
-		     #:rtscts [rtscts 0]
+		     #:xonxoff [xonxoff #f]
+		     #:rtscts [rtscts #f]
 		     #:inter-char-timeout [timeout 3])
   (let-values ([(in out) (open-input-output-file path #:exists 'append)])
+    ;; input/output ports share file descriptor, so it doesn't matter
+    ;; on which one the setup is called
     (setup in baudrate bytesize stopbits parity xonxoff rtscts timeout)
     (values in out)))
 
