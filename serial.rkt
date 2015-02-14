@@ -66,6 +66,8 @@
   (define vmin (if inter-char-timeout 1 0))
   (define vtime (if inter-char-timeout (* 10 inter-char-timeout) 0))
 
+  (define cc (TERMIOS-c_cc t))
+  
   (flag cflag CLOCAL CREAD)
   (unflag lflag ICANON ECHO ECHOE ECHOK ECHONL (or ECHOCTL 0) (or ECHOKE 0) ISIG IEXTEN)
   (unflag oflag OPOST)
@@ -103,8 +105,9 @@
 	(flag cflag CRTSCTS)
 	(unflag cflag CRTSCTS))) ; TODO: CNEW_RTSCTS?
   
-  (vector-set! (TERMIOS-c_cc t) VMIN vmin)
-  (vector-set! (TERMIOS-c_cc t) VTIME vtime)
+  (vector-set! cc VMIN vmin)
+  (vector-set! cc VTIME vtime)
+  (set-TERMIOS-c_cc! t cc)
   
   (set-TERMIOS-c_ispeed! t (hash-ref baudrate-constants baudrate))
   (set-TERMIOS-c_ospeed! t (hash-ref baudrate-constants baudrate))
