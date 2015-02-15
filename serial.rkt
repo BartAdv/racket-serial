@@ -176,7 +176,8 @@
 (define set-modem-bits
   (let ([f (get-ioctl-ffi (_ptr i _int))])
     (λ (bits port [set? #t])
-      (f port (if set? TIOCMBIS TIOCMBIC) bits))))
+      (f port (if set? TIOCMBIS TIOCMBIC) bits)
+      (void))))
 
 (provide (contract-out
 	  [set-rts (-> port? boolean? any)]))
