@@ -115,8 +115,7 @@
   (set-TERMIOS-c_ispeed! t (hash-ref baudrate-constants baudrate))
   (set-TERMIOS-c_ospeed! t (hash-ref baudrate-constants baudrate))
   
-  (tcsetattr port TCSANOW t)
-  t)
+  (tcsetattr port TCSANOW t))
 
 (define baudrate? (curry hash-has-key? baudrate-constants))
 
@@ -182,12 +181,10 @@
       (void))))
 
 (provide (contract-out
-	  [set-rts (-> port? boolean? any)]))
+	  [set-rts (-> port? boolean? any)]
+	  [set-dtr (-> port? boolean? any)]))
 
 (define set-rts (curry set-modem-bits TIOCM_RTS))
-
-(provide (contract-out
-	  [set-dtr (-> port? boolean? any)]))
 
 (define set-dtr (curry set-modem-bits TIOCM_DTR))
 
@@ -196,6 +193,12 @@
     (λ (bits port)
       (define res (f port TIOCMGET))
       (not (bitwise-and res bits)))))
+
+(provide (contract-out
+	  [get-cts (-> port? boolean?)]
+	  [get-dsr (-> port? boolean?)]
+	  [get-ri (-> port? boolean?)]
+	  [get-cd (-> port? boolean?)]))
 
 (define get-cts (curry check-modem-bits TIOCM_CTS))
 
