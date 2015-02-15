@@ -152,8 +152,10 @@
   (tcsendbreak port duration))
 
 (define TIOCMGET #x5415)
+(define TIOCMBIS #x5416)
 (define TIOCMBIC #x5417)
-(define TIOCMBIS #x741B)
+(define TIOCMSET #x5418)
+
 (define FIONREAD #x541B)
 
 (define TIOCSBRK #x5427)
