@@ -1,7 +1,17 @@
 #lang racket
 
-(require termios)
+(require termios
+	 (only-in ffi/unsafe _ptr _int))
 (require (for-syntax racket/syntax))
+
+(require "ioctl.rkt")
+
+(define TIOCMBIC #x5417)
+(define TIOCM_DTR #x002)
+(define FIONREAD #x541B)
+
+(define TIOCSBRK #x5427)
+(define TIOCCBRK #x5428)
 
 (define baudrate-constants
   (hash 0       B0
@@ -144,3 +154,17 @@
 (define (serial-close in out)
   (close-input-port in)
   (close-output-port out))
+
+(define (send-break port duration)
+  (tcsendbreak port duration))
+
+(define (flip f) (lambda (x y) (f y x)))
+
+(define set-break
+  (let [(f (get-ioctl-ffi))]
+    (λ (port [set? #t])
+     (f port (if set? TIOCSBRK TIOCCBRK)))))
+
+(define in-waiting
+  (let [(f (get-ioctl-ffi (_ptr o _int)))]
+    (curry (flip f) FIONREAD)))
