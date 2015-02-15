@@ -6,13 +6,6 @@
 
 (require "ioctl.rkt")
 
-(define TIOCMBIC #x5417)
-(define TIOCM_DTR #x002)
-(define FIONREAD #x541B)
-
-(define TIOCSBRK #x5427)
-(define TIOCCBRK #x5428)
-
 (define baudrate-constants
   (hash 0       B0
 	50      B50     
@@ -158,12 +151,59 @@
 (define (send-break port duration)
   (tcsendbreak port duration))
 
+(define TIOCMGET #x5415)
+(define TIOCMBIC #x5417)
+(define TIOCMBIS #x741B)
+(define FIONREAD #x541B)
+
+(define TIOCSBRK #x5427)
+(define TIOCCBRK #x5428)
+
+(define TIOCM_DTR #x002)
+(define TIOCM_RTS #x004)
+(define TIOCM_CTS #x020)
+(define TIOCM_CD #x040)
+(define TIOCM_RI #x080)
+(define TIOCM_DSR #x100)
+
 (define (flip f) (lambda (x y) (f y x)))
 
 (define set-break
-  (let [(f (get-ioctl-ffi))]
+  (let ([f (get-ioctl-ffi)])
     (λ (port [set? #t])
      (f port (if set? TIOCSBRK TIOCCBRK)))))
+
+(define set-modem-bits
+  (let ([f (get-ioctl-ffi (_ptr i _int))])
+    (λ (bits port [set? #t])
+      (f port (if set? TIOCMBIS TIOCMBIC) bits))))
+
+(provide (contract-out
+	  [set-rts (-> port? boolean? any)]))
+
+(define set-rts (curry set-modem-bits TIOCM_RTS))
+
+(provide (contract-out
+	  [set-dtr (-> port? boolean? any)]))
+
+(define set-dtr (curry set-modem-bits TIOCM_DTR))
+
+(define check-modem-bits
+  (let ([f (get-ioctl-ffi (_ptr o _int))])
+    (λ (bits port)
+      (define res (f port TIOCMGET))
+      (not (bitwise-and res bits)))))
+
+(define get-cts (curry check-modem-bits TIOCM_CTS))
+
+(define get-dsr (curry check-modem-bits TIOCM_DSR))
+
+(define get-ri (curry check-modem-bits TIOCM_RI))
+
+(define get-cd (curry check-modem-bits TIOCM_CD))
+
+(provide (contract-out
+	  [in-waiting (-> port? integer?)]))
 
 (define in-waiting
   (let [(f (get-ioctl-ffi (_ptr o _int)))]
