@@ -4,6 +4,7 @@
 	 (only-in ffi/unsafe _ptr _int))
 (require (for-syntax racket/syntax))
 
+(require "private/defines.rkt")
 (require "ioctl.rkt")
 
 (define baudrate-constants
@@ -154,23 +155,6 @@
 	  [send-break (-> port? integer? any)]))
 (define (send-break port duration)
   (tcsendbreak port duration))
-
-(define TIOCMGET #x5415)
-(define TIOCMBIS #x5416)
-(define TIOCMBIC #x5417)
-(define TIOCMSET #x5418)
-
-(define FIONREAD #x541B)
-
-(define TIOCSBRK #x5427)
-(define TIOCCBRK #x5428)
-
-(define TIOCM_DTR #x002)
-(define TIOCM_RTS #x004)
-(define TIOCM_CTS #x020)
-(define TIOCM_CD #x040)
-(define TIOCM_RI #x080)
-(define TIOCM_DSR #x100)
 
 (define (flip f) (lambda (x y) (f y x)))
 
