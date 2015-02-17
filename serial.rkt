@@ -203,3 +203,13 @@
 (define in-waiting
   (let [(f (get-ioctl-ffi (_ptr o _int)))]
     (curry (flip f) FIONREAD)))
+
+(provide (contract-out
+          [flush-input (-> input-port? any)]
+          [flush-output (-> output-port? any)]))
+
+(define (flush-input port)
+  (tcflush port TCIFLUSH))
+
+(define (flush-output port)
+  (tcflush port TCOFLUSH))
